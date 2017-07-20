@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+	<meta charset="UTF-8">
+	<meta http-equiv="X-UA-Compatible" content="IE=Edge" />
+	<title>单元格之合并及拆分</title>
+	<!-- External CSS -->
+	
+	<link rel="stylesheet" href="./css/common.css">
+	<!-- In-document CSS -->
+	
+	<!-- External JavaScript -->
+	<script src="http://lib.sinaapp.com/js/jquery/1.9.1/jquery-1.9.1.min.js"></script>
+	
+	<script src="//cdn.bootcss.com/echarts/3.5.0/echarts.min.js"></script>
+	<!-- In-document JavaScript -->
+</head>
+<body>
+
+</body>
+</html>
+<script>
+	// 获得参数方法
+	function GetQueryString(name)
+	{
+		var reg = new RegExp("(^|&)"+ name +"=([^&]*)(&|$)");
+		var r = window.location.search.substr(1).match(reg);
+		if(r!=null)return  unescape(r[2]); return null;
+	}
+	var modelname = GetQueryString('name');
+
+	var modelArr;
+	var dataD;
+	function getJsonLength(jsonData){ //读取json串长度
+		var jsonLength = 0;
+		for(var item in jsonData){
+			jsonLength++;
+		}
+		return jsonLength;
+	}
+	
+	$.get('./json/realDrag.json', function(data, status){	//初始化获取数据绘图
+		var dragLength = getJsonLength(data);
+		dataD = data; //object
+	})
+	$.get('./json/model.json', function(data, status){	//初始化获取数据绘图
+		var htmlValue = data[modelname].htmlValue; // html 结构
+		modelArr = data[modelname].modelArr; // dashboard 里面应该加载的echarts实例
+		$("body").empty();
+		$("body").html(htmlValue);
+		$("#t").css({
+			width: "100%"
+		})
+		for(let i=0; i<modelArr.length; i++){
+			let optionKey = modelArr[i];
+			echarts.init(document.getElementsByName(modelArr[i])[0]).setOption(dataD[optionKey]);
+		}
+	})
+	
+	$(window).resize(function(){ //这里的顺序很重要啊，先改变父元素的大小之后再改变里面格子，然后再resize echarts实例
+		let bodyWidth = Math.floor($("body").width());
+		let h = bodyWidth*0.05+"px";
+		$("#t").css({
+			width: bodyWidth+"px",
+		})
+		$("#t td").css("height",h);
+		$("#t tr").css("height",h);
+		
+		for(let i=0; i<modelArr.length; i++){
+			$("[name="+modelArr[i]+"]").empty();
+		}
+		for(let i=0; i<modelArr.length; i++){
+			let optionKey = modelArr[i];
+			echarts.init(document.getElementsByName(modelArr[i])[0]).setOption(dataD[optionKey]);
+		}
+	})
+	function launchFullscreen(element) {
+		if(element.requestFullscreen) {
+			element.requestFullscreen();
+		} else if(element.mozRequestFullScreen) {
+			element.mozRequestFullScreen();
+		} else if(element.webkitRequestFullscreen) {
+			element.webkitRequestFullscreen();
+		} else if(element.msRequestFullscreen) {
+			element.msRequestFullscreen();
+		}
+	}
+	launchFullscreen(document.documentElement);
+</script>
